@@ -1,4 +1,5 @@
 import {OrderItem} from "./OrderItem";
+import {BOX_RULES, Level} from "../config/boxRules";
 
 export class Box {
     public items: OrderItem[] = []; // Lista de productos en la caja
@@ -19,5 +20,23 @@ export class Box {
             return true; // Producto agregado exitosamente
         }
         return false; // No hay suficiente espacio para agregar el producto
+    }
+
+    // Método para verificar si un producto puede caber en la caja según las reglas de capacidad por producto
+    canFit(item: OrderItem): boolean {
+        if (this.remaining < item.quantity) return false
+
+        const rule = BOX_RULES[item.product.id]
+        if (!rule) return false
+
+        const maxPerBox = rule[this.level].GRANDE
+
+        // 🔹 contar cuánto ya hay de ese producto en la caja
+        const currentQty = this.items
+            .filter(i => i.product.id === item.product.id)
+            .reduce((sum, i) => sum + i.quantity, 0)
+
+        // 🔥 validar límite por producto
+        return currentQty + item.quantity <= maxPerBox
     }
 }
