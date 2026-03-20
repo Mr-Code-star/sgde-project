@@ -109,7 +109,7 @@ export const BOX_RULES: Record<string, Rule> = {
     // =========================
     P19: {
         PRIMARIA: { CHICA: 7, GRANDE: 20 },
-        SECUNDARIA: { CHICA: 7, GRANDE: 20 }
+        SECUNDARIA: { CHICA: 0, GRANDE: 0 }
     },
 
     // =========================
