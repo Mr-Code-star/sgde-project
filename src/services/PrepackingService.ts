@@ -27,7 +27,8 @@ export class PrepackingService {
                     maxMaster,
                     level
                 );
-                box.addItem(new OrderItem(item.product, maxMaster, level));
+                // ✅ Cambio: usar item.product.id
+                box.addItem(new OrderItem(item.product.id, maxMaster));
                 masterBoxes.push(box);
                 qty -= maxMaster;
             }
@@ -44,14 +45,15 @@ export class PrepackingService {
 
         for (const item of saldoItems) {
             const rule = BOX_RULES[item.product.id];
-            const maxSmall = rule[level].CHICA;   // capacidad máxima de caja chica para este producto
-            const maxLarge = rule[level].GRANDE;  // capacidad máxima de caja grande
+            const maxSmall = rule[level].CHICA;
+            const maxLarge = rule[level].GRANDE;
 
             let placed = false;
 
             // Intentar colocar en alguna caja existente
             for (const box of saldoBoxes) {
-                const orderItem = new OrderItem(item.product, item.size, level);
+                // ✅ Cambio: usar item.product.id
+                const orderItem = new OrderItem(item.product.id, item.size);
                 if (box.canFit(orderItem)) {
                     box.addItem(orderItem);
                     placed = true;
@@ -60,13 +62,10 @@ export class PrepackingService {
             }
 
             if (!placed) {
-                // Determinar qué tipo de caja crear
                 let boxCapacity: number;
                 if (item.size <= maxSmall) {
-                    // Cabe en una caja chica
                     boxCapacity = maxSmall;
                 } else {
-                    // Debe usar una caja grande (se asume que item.size <= maxLarge)
                     boxCapacity = maxLarge;
                 }
 
@@ -76,8 +75,8 @@ export class PrepackingService {
                     boxCapacity,
                     level
                 );
-                // El producto debe caber, porque hemos elegido la capacidad adecuada
-                const success = newBox.addItem(new OrderItem(item.product, item.size, level));
+                // ✅ Cambio: usar item.product.id
+                const success = newBox.addItem(new OrderItem(item.product.id, item.size));
                 if (!success) {
                     console.error(`❌ Error: No se pudo agregar ${item.product.id} (${item.size}) a la caja de capacidad ${boxCapacity}`);
                 }
