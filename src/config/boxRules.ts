@@ -116,6 +116,16 @@ export const BOX_RULES: Record<string, Rule> = {
     // 🎓 SECUNDARIA (Sxx)
     // =========================
 
+    // CUADERNOS
+    S13: {
+        PRIMARIA: { CHICA: 0, GRANDE: 0 },
+        SECUNDARIA: { CHICA: 50, GRANDE: 50 }
+    },
+    S14: {
+        PRIMARIA: { CHICA: 0, GRANDE: 0 },
+        SECUNDARIA: { CHICA: 50, GRANDE: 50 }
+    },
+
     // 👕 POLOS
     S01: {
         PRIMARIA: { CHICA: 0, GRANDE: 0 },
