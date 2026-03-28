@@ -6,85 +6,70 @@ let boxCounter = 0;
 
 export class PrepackingService {
     private packLevel(items: OrderItem[], level: Level): Box[] {
-        const masterBoxes: Box[] = [];
-        const saldoItems: { size: number; product: any }[] = [];
+        const boxes: Box[] = []
 
-        // 1. MASTER: empacar en cajas grandes completas
+        const expanded: { size: number; product: any }[] = []
+
+        // 🔹 expandir items
         for (const item of items) {
-            const rule = BOX_RULES[item.product.id];
-            if (!rule) {
-                console.warn("⚠️ Sin regla:", item.product.id);
-                continue;
-            }
+            const rule = BOX_RULES[item.product.id]
+            if (!rule) continue
 
-            const maxMaster = rule[level].GRANDE;
-            let qty = item.quantity;
+            let qty = item.quantity
+            const maxMaster = rule[level].GRANDE
 
-            while (qty >= maxMaster) {
-                const box = new Box(
-                    "BOX-" + ++boxCounter,
-                    maxMaster,
-                    maxMaster,
-                    level
-                );
-                // ✅ Cambio: usar item.product.id
-                box.addItem(new OrderItem(item.product.id, maxMaster));
-                masterBoxes.push(box);
-                qty -= maxMaster;
-            }
-
-            if (qty > 0) {
-                saldoItems.push({ size: qty, product: item.product });
+            while (qty > 0) {
+                const chunk = Math.min(qty, maxMaster)
+                expanded.push({ size: chunk, product: item.product })
+                qty -= chunk
             }
         }
 
-        // 2. SALDOS: empacar los restos usando cajas adecuadas
-        saldoItems.sort((a, b) => b.size - a.size);
+        // 🔹 ordenar (FFD)
+        expanded.sort((a, b) => b.size - a.size)
 
-        const saldoBoxes: Box[] = [];
+        // 🔥 asignación
+        for (const item of expanded) {
+            const rule = BOX_RULES[item.product.id]
+            const maxMaster = rule[level].GRANDE
+            const maxSaldo = rule[level].CHICA
 
-        for (const item of saldoItems) {
-            const rule = BOX_RULES[item.product.id];
-            const maxSmall = rule[level].CHICA;
-            const maxLarge = rule[level].GRANDE;
+            // ✅ CORRECCIÓN: pasar el ID del producto, no el objeto
+            const orderItem = new OrderItem(item.product.id, item.size)
 
-            let placed = false;
+            let placed = false
 
-            // Intentar colocar en alguna caja existente
-            for (const box of saldoBoxes) {
-                // ✅ Cambio: usar item.product.id
-                const orderItem = new OrderItem(item.product.id, item.size);
+            // 🔹 intentar en cajas existentes
+            for (const box of boxes) {
                 if (box.canFit(orderItem)) {
-                    box.addItem(orderItem);
-                    placed = true;
-                    break;
+                    box.addItem(orderItem)
+                    placed = true
+                    break
                 }
             }
 
+            // 🔹 crear nueva caja si no entra
             if (!placed) {
-                let boxCapacity: number;
-                if (item.size <= maxSmall) {
-                    boxCapacity = maxSmall;
-                } else {
-                    boxCapacity = maxLarge;
-                }
+                const type: "CHICA" | "GRANDE" =
+                    item.size > maxSaldo ? "GRANDE" : "CHICA"
+
+                const capacity =
+                    type === "GRANDE" ? maxMaster : maxSaldo
 
                 const newBox = new Box(
                     "BOX-" + ++boxCounter,
-                    boxCapacity,
-                    boxCapacity,
-                    level
-                );
-                // ✅ Cambio: usar item.product.id
-                const success = newBox.addItem(new OrderItem(item.product.id, item.size));
-                if (!success) {
-                    console.error(`❌ Error: No se pudo agregar ${item.product.id} (${item.size}) a la caja de capacidad ${boxCapacity}`);
-                }
-                saldoBoxes.push(newBox);
+                    capacity,
+                    capacity,
+                    level,
+                    type
+                )
+
+                newBox.addItem(orderItem)
+                boxes.push(newBox)
             }
         }
 
-        return [...masterBoxes, ...saldoBoxes];
+        return boxes
     }
 
     generateBoxes(items: OrderItem[]): Box[] {
