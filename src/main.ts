@@ -5,11 +5,11 @@ import { OrderItem } from "./models/OrderItem"
 
 // 🔹 1. Crear pedidos (OrderItems) usando solo IDs y cantidades
 const items = [
-    new OrderItem("P20", 50),    // Cuaderno
-    new OrderItem("P07", 100),   // Polo
-    new OrderItem("P08", 38),    // Buzo
-    new OrderItem("P19", 50),    // Mochila
-    new OrderItem("P14", 150)    // Otro buzo
+    new OrderItem("P20", 50),
+    new OrderItem("P07", 100),
+    new OrderItem("P08", 38),
+    new OrderItem("P19", 50),
+    new OrderItem("P14", 150)
 ]
 
 // 🔹 2. Crear colegio (ahora el nivel de los items se determina automáticamente)
@@ -27,17 +27,16 @@ const service = new PrepackingService()
 const boxes = service.generateBoxes(school.orderItems)
 
 // 🔹 4. Mostrar resultados
-console.log("📦 CAJAS GENERADAS:\n")
+console.log("\n📦 RESULTADO FINAL:\n")
 
-boxes.forEach((box, index) => {
-    console.log(`Caja ${index + 1} (${box.level})`)
-    console.log("Capacidad:", box.capacity)
-    console.log("Espacio restante:", box.remaining)
+boxes.forEach((box, i) => {
+    console.log(`Caja ${i + 1} (${box.type})`)
+    console.log("Volumen usado:", box.currentVolume.toFixed(6))
+    console.log("Espacio libre %:", (box.getFreePercentage() * 100).toFixed(2) + "%")
 
-    console.log("Items:")
     box.items.forEach(item => {
-        console.log(`  - ${item.product.name} → ${item.quantity}`)
+        console.log(` - ${item.product.id} → ${item.quantity}`)
     })
 
-    console.log("----------------------")
+    console.log("-------------------")
 })
